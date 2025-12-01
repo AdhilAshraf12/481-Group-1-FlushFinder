@@ -1,4 +1,19 @@
-<form action={console.log('Hello')}>
+<script>
+	import { userInfo } from '$lib/userInfoStore';
+
+	$effect(() => {
+		if (userInfo.getEmail() == '') {
+			location.href = '/';
+		}
+	});
+</script>
+
+<form
+	onsubmit={(e) => {
+		e.preventDefault();
+		console.log('Hello');
+	}}
+>
 	<div>
 		<button type="menu"
 			><img src="https://www.svgrepo.com/show/524617/hamburger-menu.svg" alt="Hamburger" /></button

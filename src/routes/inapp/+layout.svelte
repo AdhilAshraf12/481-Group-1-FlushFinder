@@ -1,17 +1,24 @@
 <script>
+	import { page } from '$app/stores';
+	import { userInfo } from '$lib/userInfoStore';
+
 	let { children } = $props();
 </script>
 
 {@render children?.()}
 <nav>
-	<a href="/find"
+	<a href="/inapp/find" class:selected={$page.url.pathname === '/inapp/find'}
 		><img src="https://www.svgrepo.com/show/529715/map-point-wave.svg" alt="Pin Icon" /><span
 			>Find</span
 		></a
 	>
 
-	<a href="/inapp/review"><img src="" alt="Review Icon" /><span>Review</span></a>
-	<a href="/inapp/profile"><img src="" alt="Profile Icon" /><span>Profile</span></a>
+	<a href="/inapp/review" class:selected={$page.url.pathname === '/inapp/review'}
+		><img src="" alt="Review Icon" /><span>Review</span></a
+	>
+	<a href="/inapp/profile" class:selected={$page.url.pathname === '/inapp/profile'}
+		><img src={userInfo.getProfilePicture()} alt="Profile Icon" /><span>Profile</span></a
+	>
 </nav>
 
 <style>
@@ -19,9 +26,11 @@
 		display: block;
 	}
 	img {
-		width: 40px;
+		width: 50px;
 		aspect-ratio: 1;
 		padding: 1svb 6svw;
+		border-radius: 50%;
+		object-fit: cover;
 	}
 
 	a {
@@ -31,6 +40,7 @@
 		text-decoration: none;
 		cursor: pointer;
 		justify-content: center;
+		border-radius: 1rem;
 	}
 
 	nav {

@@ -1,50 +1,47 @@
+<script>
+	import { userInfo } from '$lib/userInfoStore.js';
+</script>
+
 <h1>Welcome to SvelteKit</h1>
 <p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
 <a href="/inapp/find">to find</a>
-<div>
-	<h1>Sign up</h1>
-	<form action="">
-		<label for="name">Full Name</label>
-		<input name="name" type="text" />
+<form
+	onsubmit={(e) => {
+		e.preventDefault();
 
-		<label for="email">Email</label>
-		<input type="email" name="email" value="toiletdestroyer123@gmail.com" />
+		let formData = new FormData(e.target);
+		let formObject = Object.fromEntries(formData.entries());
 
-		<label for="location">Location</label>
-		<select name="location">
-			<option value="Calgary">Calgary</option>
-		</select>
+		userInfo.setEmail(formObject.email);
 
-		<label for="accessibility">Accessibilty Needs</label>
-		<select name="accessibility">
-			<option value="Yes">Yes</option>
-			<option value="No">No</option>
-		</select>
-		<span>
-			<input type="checkbox" name="terms" />
-			Accept Our terms
-			<a href="https://youtu.be/dQw4w9WgXcQ?si=qhEw1V2XyojYuqNH">Read our T&C's</a>
-		</span>
+		location.href = '/inapp/profile';
+	}}
+>
+	<label for="email">Email</label>
+	<input type="email" name="email" placeholder="name.last@gmail.com" />
 
-		<button type="submit">Register</button>
-	</form>
-</div>
+	<label for="password">Password</label>
+	<input type="password" name="password" placeholder="your password here" />
+
+	<button type="submit">Sign in</button>
+
+	<a href="https://youtu.be/dQw4w9WgXcQ?si=qhEw1V2XyojYuqNH">Forgot Password?</a>
+</form>
+
+<a
+	href="/inapp/profile"
+	onclick={() => {
+		userInfo.setEmail('test@mail.com');
+		userInfo.setGuestProfilePicture();
+	}}>Continue as Guest</a
+>
 
 <style>
-	button {
-		background-color: grey;
-		color: white;
-		border: none;
-		border-radius: 1svb;
-		padding: 1svb;
-	}
-
-	form {
-		display: flex;
-		flex-direction: column;
+	form a {
+		color: grey;
 	}
 
 	a {
-		color: grey;
+		color: lightgrey;
 	}
 </style>
