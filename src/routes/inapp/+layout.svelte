@@ -1,6 +1,7 @@
 <script>
 	import { page } from '$app/stores';
 	import { userInfo } from '$lib/userInfoStore';
+	import Icon from '$lib/assets/Icon.png';
 
 	let { children } = $props();
 </script>
@@ -14,7 +15,7 @@
 	>
 
 	<a href="/inapp/review" class:selected={$page.url.pathname === '/inapp/review'}
-		><img src="" alt="Review Icon" /><span>Review</span></a
+		><img src={Icon} alt="Review Icon" class="revicon"/><span>Review</span></a
 	>
 	<a href="/inapp/profile" class:selected={$page.url.pathname === '/inapp/profile'}
 		><img src={userInfo.getProfilePicture()} alt="Profile Icon" /><span>Profile</span></a
@@ -28,9 +29,13 @@
 	img {
 		width: 50px;
 		aspect-ratio: 1;
-		padding: 1svb 6svw;
+		padding: 6px;
 		border-radius: 50%;
-		object-fit: cover;
+		object-fit: contain;
+	}
+
+	.revicon{
+		
 	}
 
 	a {
@@ -45,12 +50,13 @@
 
 	nav {
 		display: flex;
-		background-color: lightblue;
+		background-color: #BBBFEF;
 		border-top-left-radius: 4svb;
 		border-top-right-radius: 4svb;
 		padding: 1svb;
 		justify-content: center;
 		justify-content: space-evenly;
+		bottom: 0;
 	}
 
 	.selected {
