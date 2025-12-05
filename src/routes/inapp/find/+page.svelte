@@ -10,7 +10,7 @@
 	});
 
 </script>
-
+<div class="fullpage">
 <form class="searchbar-full"
 	onsubmit={(e) => {
 		e.preventDefault();
@@ -37,9 +37,9 @@
 </div>
 <div class="nearbylocations">
 	<div class="buttonrow">
-		<button class="locationbut">
+		<button class="locationbut" onclick={() => goto('/inapp/reviewsummary')}>
 			Deville Coffee Washroom
-			<small class="small">100 m&nbsp;&nbsp;&nbsp;&nbsp;2 min  🚻    ♿</small>
+			<small class="small">230 m&nbsp;&nbsp;&nbsp;&nbsp;3 min  🚻    ♿</small>
 		</button>
 		<div class="gocol">
 			<div>⭐️⭐️⭐️⭐️⭐️</div>
@@ -73,7 +73,7 @@
 		</div>
 	</div>	
 </div>
-
+</div>
 <style>
 	.gocol{
 		display:flex;
