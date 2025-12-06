@@ -4,6 +4,11 @@
     import heart2 from '$lib/assets/Heart2.png';
     import { userInfo } from '$lib/userInfoStore.js';
 	import { stopPropagation } from 'svelte/legacy';
+    import { sharedReviews } from '$lib';
+    import { rating } from '$lib';
+    import { currentcondition } from '$lib';
+    const STAR_FILLED = '\u2605';
+	const STAR_EMPTY = '\u2606';
 
     let show = false;
     let like=false;
@@ -42,26 +47,47 @@
                 <button onclick={toggleheart} class="btn-heart"><img src={like ? heart2 : heart} class="heart"/></button>
             </div>
             <div class="dc">
-                <h4>227 11 Ave SW <br> 🚻    ♿    <br> ⭐️⭐️⭐️⭐️⭐️</h4>
+                <h4>227 11 Ave SW <br> 🚻    ♿    <br> <span class="stars-inline">{STAR_FILLED.repeat(Math.round($rating))}</span></h4>
                 <div class="dr">
-                    <button class="open">Open</button>
+                    <button class="open">{$currentcondition}</button>
                     <button class="review-btn" onclick={toreviewpage}>Leave a Review</button>
                 </div>      
             </div>
         </div>
         <!-------------------------------->
-    </div>
-    <div class="revwrapper">
-        <h2 class="latestrev">Latest Reviews</h2>
-        <div class="rev">
-            <h3>⭐️⭐️⭐️⭐️⭐️</h3>
-            <div><h2>New Favourite place yall!</h2><p>Guysss, its so cleaannn!!!</p></div>
-            <h5>BathroomLover234</h5>
+    </div><div class="revwrapper">
+    {#each $sharedReviews as item}
+	<div class="rev">
+        <!-- <h3>{item.rating}</h3> -->
+         <div class="score">
+            <span class="stars-inline">
+                {STAR_FILLED.repeat(item.rating)}{STAR_EMPTY.repeat(5 - item.rating)}
+            </span>
+            <span class="rating-number">{item.rating}/5</span>
         </div>
-    </div>
+		<h3>{item.title}</h3>
+		<p>{item.body}</p>
+		<p>{item.author}</p>
+	</div>
+{/each}
+</div>
 </div>
 
 <style>
+    .rating-number {
+		color: #414157;
+		font-weight: 700;
+	}
+    .stars-inline {
+		color: #f7b500;
+		font-size: 16px;
+		letter-spacing: 1px;
+	}
+    .score {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
     .popup{
         background: white;
         opacity: 100%;
@@ -143,7 +169,6 @@
         background-color: #009951;
         color: white;
         width: 128px;
-        height: 25px;
         font-size: 16px;
         border: none;
         border-radius: 8px;

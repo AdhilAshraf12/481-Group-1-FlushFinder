@@ -2,6 +2,9 @@
 	import { userInfo } from '$lib/userInfoStore';
 	import { goto } from '$app/navigation';
 	import map from '$lib/assets/mapsimage.png';
+	import { rating } from '$lib';
+	const STAR_FILLED = '\u2605';
+	const STAR_EMPTY = '\u2606';
 
 	$effect(() => {
 		if (userInfo.getEmail() == '') {
@@ -42,7 +45,7 @@
 			<small class="small">230 m&nbsp;&nbsp;&nbsp;&nbsp;3 min  🚻    ♿</small>
 		</button>
 		<div class="gocol">
-			<div>⭐️⭐️⭐️⭐️⭐️</div>
+			<div><span class="stars-inline">{STAR_FILLED.repeat(Math.round($rating))}</span></div>
 			<button class="FSbutton" onclick={() => goto('/inapp/deville')}>
 				GO
 			</button>
@@ -54,7 +57,7 @@
 			<small class="small">300 m&nbsp;&nbsp;&nbsp;&nbsp;6 min&nbsp; ⚧    ♿</small>
 		</button>
 		<div class="gocol">
-			<div>⭐️⭐️⭐️⭐️</div>
+			<div><span class="stars-inline">{STAR_FILLED.repeat(Math.round(4))}</span></div>
 			<button class="FSbutton">
 				GO
 			</button>
@@ -66,7 +69,7 @@
 			<small class="small">350 m&nbsp;&nbsp;&nbsp;&nbsp;8 min  🚻    ♿</small>
 		</button>
 		<div class="gocol">
-			<div>⭐️⭐️⭐️</div>
+			<div><span class="stars-inline">{STAR_FILLED.repeat(Math.round(2))}</span></div>
 			<button class="FSbutton">
 				GO
 			</button>
@@ -75,6 +78,11 @@
 </div>
 </div>
 <style>
+	.stars-inline {
+		color: #f7b500;
+		font-size: 20px;
+		letter-spacing: 1px;
+	}
 	.gocol{
 		display:flex;
 		flex-direction: column;
