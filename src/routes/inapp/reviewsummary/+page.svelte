@@ -35,7 +35,7 @@
 <div>
     <div class="headdiv">
         <!-- <h1>{userInfo}</h1> -->
-        <button class="back">&lt;</button>
+        <button class="back" onclick={() => goto('/inapp/find')}>&lt;</button>
         <div class="heading">
             <div class="dc">
                 <h1>Deville Coffee</h1>
