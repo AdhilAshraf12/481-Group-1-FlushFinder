@@ -2,6 +2,8 @@
 <script>
 	import { page } from '$app/stores';
 
+	let pagePath = $derived($page.url.pathname);
+
 	let { children } = $props();
 </script>
 
@@ -13,9 +15,10 @@
 <!-- Fixed bottom navigation -->
 <nav class="fixed bottom-0 left-0 right-0 bg-purple-100 shadow-lg z-50">
 	<div class="flex items-center justify-around px-6 py-4 max-w-md mx-auto">
-		<a 
-			href="/inapp/find" 
-			class="flex flex-col items-center gap-1 transition-colors {$page.url.pathname === '/inapp/find' ? 'text-purple-700' : 'text-gray-600'}"
+		<a
+			href="/inapp/find"
+			class={'flex flex-col items-center gap-1 px-8 py-2 rounded-full transition-all ' +
+				(pagePath === '/inapp/find' ? 'bg-white text-purple-700 shadow' : 'text-gray-600')}
 		>
 			<svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 				<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
@@ -24,9 +27,10 @@
 			<span class="text-xs">Find</span>
 		</a>
 
-		<a 
-			href="/inapp/review" 
-			class="flex flex-col items-center gap-1 transition-colors {$page.url.pathname === '/inapp/review' ? 'text-purple-700' : 'text-gray-600'}"
+		<a
+			href="/inapp/review"
+			class={'flex flex-col items-center gap-1 px-8 py-2 rounded-full transition-all ' +
+				(pagePath === '/inapp/review' ? 'bg-white text-purple-700 shadow' : 'text-gray-600')}
 		>
 			<svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 				<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -38,9 +42,10 @@
 			<span class="text-xs">Review</span>
 		</a>
 
-		<a 
-			href="/inapp/profile" 
-			class="flex flex-col items-center gap-1 px-8 py-2 rounded-full transition-all {$page.url.pathname === '/inapp/profile' ? 'bg-white text-purple-700 shadow' : 'text-gray-600'}"
+		<a
+			href="/inapp/profile"
+			class={'flex flex-col items-center gap-1 px-8 py-2 rounded-full transition-all ' +
+				(pagePath === '/inapp/profile' ? 'bg-white text-purple-700 shadow' : 'text-gray-600')}
 		>
 			<svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 				<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
