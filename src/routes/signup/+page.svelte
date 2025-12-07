@@ -24,7 +24,7 @@
 	<label for="email">Email</label>
 	<input type="email" name="email" placeholder="toiletdestroyer123@gmail.com" required />
 
-	<label for="location">Location</label>
+	<!-- <label for="location">Location</label>
 	<select name="location" required>
 		<option value="Calgary">Calgary</option>
 	</select>
@@ -34,7 +34,7 @@
 		<option value="" disabled selected>Please select an option</option>
 		<option value="Yes">Yes</option>
 		<option value="No">No</option>
-	</select>
+	</select> -->
 	<span>
 		<input type="checkbox" name="terms" required />
 		<p>
