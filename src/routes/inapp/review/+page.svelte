@@ -56,15 +56,27 @@
 	let review = $state('');
 	let availability = $state(availabilityOptions[0]);
 	let condition = $state(conditionOptions[0]);
-	let accessibility = $state(accessibilityOptions[0]);
+	let accessibility = $state([]);
 	let helperMessage = $state('');
-	const currentAuthor = userInfo.getUsername() || 'You';
+	let currentAuthor = $derived(userInfo?.getUsername ? userInfo.getUsername() : 'You');
+	let editingId = $state(null);
 
 	$effect(() => {
-		if (userInfo.getEmail() == '') {
-			goto('/');
-		}
-	});
+        if (userInfo?.getEmail && userInfo.getEmail() == '') {
+            goto('/');
+        }
+    });
+
+	function toggleAccess(option) {
+    if (accessibility.includes(option)) {
+        // If it's already selected, remove it
+        accessibility = accessibility.filter((item) => item !== option);
+    } else {
+        // If it's not selected, add it
+        accessibility = [...accessibility, option];
+    }
+    helperMessage = '';
+	}
 
 	function submitReview() {
 		if (!title.trim() || !review.trim() || rating === 0) {
@@ -72,21 +84,41 @@
 			return;
 		}
 
-		const newReview = {
-			id: Date.now(), // Simple unique ID
-			title: title.trim(),
-			body: review.trim(),
-			rating,
-			author: userInfo.getUsername() || 'You',
-			time: 'Just now',
-			status: { availability, condition, accessibility }
-		};
+		if (editingId) {
+			reviews = reviews.map((item) =>
+				item.id === editingId
+					? {
+							...item,
+							title: title.trim(),
+							body: review.trim(),
+							rating,
+							status: { availability, condition, accessibility }
+						}
+					: item
+			);
+			helperMessage = 'Your review was updated.';
+		} else {
+			const newReview = {
+				id: Date.now(), // Simple unique ID
+				title: title.trim(),
+				body: review.trim(),
+				rating,
+				author: userInfo.getUsername() || 'You',
+				time: 'Just now',
+				status: { availability, condition, accessibility }
+			};
 
-		reviews = [newReview, ...reviews].slice(0, 6);
+			reviews = [newReview, ...reviews].slice(0, 6);
+			helperMessage = 'Thanks for sharing. Your review is live.';
+		}
+
+		editingId = null;
 		title = '';
 		review = '';
 		rating = 0;
-		helperMessage = 'Thanks for sharing. Your review is live.';
+		availability = availabilityOptions[0];
+		condition = conditionOptions[0];
+		accessibility = [];
 	}
 
 	function deleteReview(id) {
@@ -96,6 +128,30 @@
 
 	function isOwnReview(item) {
 		return item.author === currentAuthor;
+	}
+
+	function startEdit(item) {
+		editingId = item.id;
+		title = item.title;
+		review = item.body;
+		rating = item.rating;
+		availability = item.status.availability;
+		condition = item.status.condition;
+		accessibility = Array.isArray(item.status.accessibility)
+			? [...item.status.accessibility]
+			: [item.status.accessibility];
+		helperMessage = 'Editing your review...';
+	}
+
+	function cancelEdit() {
+		editingId = null;
+		helperMessage = 'Edit cancelled.';
+		title = '';
+		review = '';
+		rating = 0;
+		availability = availabilityOptions[0];
+		condition = conditionOptions[0];
+		accessibility = [];
 	}
 </script>
 
@@ -166,11 +222,8 @@
 				{#each accessibilityOptions as option}
 					<button
 						type="button"
-						class:selected={accessibility === option}
-						onclick={() => {
-							accessibility = option;
-							helperMessage = '';
-						}}
+						class:selected={accessibility.includes(option)}
+						onclick={() => toggleAccess(option)}
 					>
 						{option}
 					</button>
@@ -224,14 +277,21 @@
 					placeholder="Keep it short: what stood out, how busy it was, any tips."
 					bind:value={review}
 					oninput={() => (helperMessage = '')}
-				/>
+				></textarea>
 			</label>
 
 			{#if helperMessage}
 				<p class="helper">{helperMessage}</p>
 			{/if}
 
-			<button class="submit" type="button" onclick={submitReview}>Submit review</button>
+			<div class="actions">
+				<button class="submit" type="button" onclick={submitReview}>
+					{editingId ? 'Update review' : 'Submit review'}
+				</button>
+				{#if editingId}
+					<button class="ghost" type="button" onclick={cancelEdit}>Cancel</button>
+				{/if}
+			</div>
 		</section>
 
 		<section class="card reviews">
@@ -260,6 +320,14 @@
 								{#if isOwnReview(item)}
 									<button
 										type="button"
+										class="ghost"
+										aria-label="Edit your review"
+										onclick={() => startEdit(item)}
+									>
+										Edit
+									</button>
+									<button
+										type="button"
 										class="delete"
 										aria-label="Delete your review"
 										onclick={() => deleteReview(item.id)}
@@ -273,7 +341,14 @@
 						<div class="tags">
 							<span>{item.status.availability}</span>
 							<span>{item.status.condition}</span>
-							<span>{item.status.accessibility}</span>
+
+							{#if Array.isArray(item.status.accessibility)}
+								{#each item.status.accessibility as tag}
+									<span>{tag}</span>
+								{/each}
+							{:else}
+								<span>{item.status.accessibility}</span>
+							{/if}
 						</div>
 					</article>
 				{/each}
@@ -455,6 +530,12 @@
 		font-weight: 600;
 	}
 
+	.actions {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+	}
+
 	.submit {
 		align-self: flex-start;
 		background: linear-gradient(135deg, #4f378b, #654cb5);
@@ -471,6 +552,22 @@
 	.submit:hover {
 		transform: translateY(-1px);
 		box-shadow: 0 12px 20px rgba(79, 55, 139, 0.36);
+	}
+
+	.ghost,
+	.delete {
+		background: transparent;
+		border: 1px solid #d6d6de;
+		color: #4f378b;
+		padding: 8px 12px;
+		border-radius: 10px;
+		font-weight: 700;
+		cursor: pointer;
+	}
+
+	.delete {
+		color: #c03221;
+		border-color: #e7c9c5;
 	}
 
 	.reviews {

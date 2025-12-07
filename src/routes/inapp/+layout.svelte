@@ -30,14 +30,14 @@
 		width: 50px;
 		aspect-ratio: 1;
 		padding: 6px;
-		border-radius: 50%;
+		border-radius: 20%;
 		object-fit: contain;
 	}
 
-	.revicon{
-		
-	}
-
+	.revicon {
+    width: 50px;
+	border-radius: 5%;
+}
 	a {
 		display: flex;
 		flex-direction: column;
@@ -49,17 +49,26 @@
 	}
 
 	nav {
+		position: fixed;
+		left: 0;
+		right: 0;
+		bottom: 0;
 		display: flex;
 		background-color: #BBBFEF;
 		border-top-left-radius: 4svb;
 		border-top-right-radius: 4svb;
 		padding: 1svb;
-		justify-content: center;
 		justify-content: space-evenly;
-		bottom: 0;
+		align-items: center;
+		box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.12);
+		z-index: 20;
 	}
 
 	.selected {
 		background-color: white;
+	}
+
+	:global(body) {
+		padding-bottom: 96px;
 	}
 </style>
