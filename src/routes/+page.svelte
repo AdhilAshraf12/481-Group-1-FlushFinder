@@ -9,7 +9,7 @@
 
 		userInfo.setEmail(formObject.email);
 
-		location.href = '/inapp/profile';
+		location.href = '/inapp/find';
 	};
 </script>
 
@@ -29,7 +29,7 @@
 </form>
 <div>
 	<a
-		href="/inapp/profile"
+		href="/inapp/find"
 		onclick={() => {
 			userInfo.setEmail('test@mail.com');
 			userInfo.setGuestProfilePicture();
