@@ -5,11 +5,10 @@ const STORAGE_KEY = 'userInfo';
 
 // Load from sessionStorage or default
 function load() {
-	if (!browser) return '';
+	// Return a safe default even during SSR so callers can access properties
+	if (!browser) return { email: '', userprofilePicture: 'https://picsum.photos/100/100' };
 	const json = sessionStorage.getItem(STORAGE_KEY);
-	return json
-		? JSON.parse(json)
-		: { email: '', userprofilePicture: 'https://picsum.photos/100/100' };
+	return json ? JSON.parse(json) : { email: '', userprofilePicture: 'https://picsum.photos/100/100' };
 }
 
 function save(info) {
@@ -38,3 +37,8 @@ export const userInfo = {
 		return email ? email.split('@')[0] : '';
 	}
 };
+
+export function isGuest() {
+	const email = load().email;
+	return !email || email === 'test@mail.com';
+}

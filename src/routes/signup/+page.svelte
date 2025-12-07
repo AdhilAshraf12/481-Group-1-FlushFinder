@@ -19,12 +19,12 @@
 <form onsubmit={(e) => signup(e)}>
 	<h1>Sign up</h1>
 	<label for="name">Full Name</label>
-	<input name="name" type="text" required />
+	<input name="name" type="text" placeholder="First Last" required />
 
 	<label for="email">Email</label>
 	<input type="email" name="email" placeholder="toiletdestroyer123@gmail.com" required />
 
-	<label for="location">Location</label>
+	<!-- <label for="location">Location</label>
 	<select name="location" required>
 		<option value="Calgary">Calgary</option>
 	</select>
@@ -34,12 +34,12 @@
 		<option value="" disabled selected>Please select an option</option>
 		<option value="Yes">Yes</option>
 		<option value="No">No</option>
-	</select>
+	</select> -->
 	<span>
 		<input type="checkbox" name="terms" required />
 		<p>
 			I accept the terms
-			<a href="https://youtu.be/dQw4w9WgXcQ?si=qhEw1V2XyojYuqNH">Read our T&C's</a>
+			<a href="https://youtu.be/dQw4w9WgXcQ?si=qhEw1V2XyojYuqNH"><u>Read our T&C's</u></a>
 		</p>
 	</span>
 

@@ -1,6 +1,9 @@
 <script>
 	import { userInfo } from '$lib/userInfoStore';
-	import { sharedReviews } from '$lib';
+	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
+	import { browser } from '$app/environment';
+
 	const availabilityOptions = ['Open now', 'Busy but open', 'Closed for cleaning'];
 	const conditionOptions = ['Sparkling clean', 'Usable', 'Needs attention'];
 	const accessibilityOptions = ['Wheelchair accessible', 'Gender neutral', 'Family friendly'];
@@ -9,6 +12,7 @@
 
 	const seedReviews = [
 		{
+			id: 1,
 			title: 'Clean and bright',
 			body: 'Easy to find and spotless. Soap and paper towels were stocked.',
 			rating: 5,
@@ -21,6 +25,7 @@
 			}
 		},
 		{
+			id: 2,
 			title: 'Lineup at lunch',
 			body: 'Only two stalls so it backs up around noon, but still usable.',
 			rating: 3,
@@ -33,6 +38,7 @@
 			}
 		},
 		{
+			id: 3,
 			title: 'Closed earlier',
 			body: 'Cleaning sign was up around 8pm. Come back later.',
 			rating: 2,
@@ -46,57 +52,173 @@
 		}
 	];
 
-	let reviews = $state(seedReviews);
+	// Reviews stored per-location keyed by location name. Seed the example location.
+	let reviewsByLocation = $state({ 'Deville Coffee Washroom': seedReviews });
+	// load persisted reviews if available
+	if (browser) {
+		try {
+			const raw = sessionStorage.getItem('reviewsByLocation');
+			if (raw) reviewsByLocation = JSON.parse(raw);
+		} catch (e) {
+			// ignore parse errors
+		}
+	}
+	let currentReviews = $state([]);
 	let rating = $state(0);
 	let title = $state('');
 	let review = $state('');
 	let availability = $state(availabilityOptions[0]);
 	let condition = $state(conditionOptions[0]);
-	let accessibility = $state(accessibilityOptions[0]);
+	let accessibility = $state([]);
 	let helperMessage = $state('');
+	let currentAuthor = $derived(userInfo?.getUsername ? userInfo.getUsername() : 'You');
+	let editingId = $state(null);
+
+	let locationName = $state('Selected location');
+	let locationLink = $state('/inapp/find');
 
 	$effect(() => {
-		if (userInfo.getEmail() == '') {
-			location.href = '/';
+		const n = $page.url.searchParams.get('name');
+		const l = $page.url.searchParams.get('link');
+		locationName = n ?? 'Selected location';
+		locationLink = l ?? '/inapp/find';
+	});
+
+	
+	$effect(() => {
+		currentReviews = reviewsByLocation[locationName] ?? [];
+	});
+
+	
+	$effect(() => {
+		if (!browser) return;
+		try {
+			sessionStorage.setItem('reviewsByLocation', JSON.stringify(reviewsByLocation));
+		} catch (e) {
+			
 		}
 	});
 
-	function selectValue(setter, value) {
-		setter(value);
+function scrollToReviews() {
+    if (!browser) return;
+    const el = document.getElementById('reviews-section');
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+}
+
+function isGuest() {
+	const e = userInfo.getEmail();
+	return !e || e === 'test@mail.com';
+}
+
+	
+
+	function toggleAccess(option) {
+		if (accessibility.includes(option)) {
+			// If it's already selected, remove it
+			accessibility = accessibility.filter((item) => item !== option);
+		} else {
+			// If it's not selected, add it
+			accessibility = [...accessibility, option];
+		}
 		helperMessage = '';
 	}
 
 	function submitReview() {
+		if (userInfo.getEmail() === 'test@mail.com') {
+			helperMessage = 'Please log in to leave a review';
+			return;
+		}
+
 		if (!title.trim() || !review.trim() || rating === 0) {
 			helperMessage = 'Add a title, rating, and a short note before submitting.';
 			return;
 		}
 
-		const newReview = {
-			title: title.trim(),
-			body: review.trim(),
-			rating,
-			author: userInfo.getUsername() || 'You',
-			time: 'Just now',
-			status: { availability, condition, accessibility }
-		};
+		// Ensure an array exists for this location
+		const list = reviewsByLocation[locationName] ?? [];
 
-		reviews = [newReview, ...reviews].slice(0, 6);
+		if (editingId) {
+			reviewsByLocation[locationName] = list.map((item) =>
+				item.id === editingId
+					? {
+							...item,
+							title: title.trim(),
+							body: review.trim(),
+							rating,
+							status: { availability, condition, accessibility }
+						}
+					: item
+			);
+			helperMessage = 'Your review was updated.';
+		} else {
+			const newReview = {
+				id: Date.now(), // Simple unique ID
+				title: title.trim(),
+				body: review.trim(),
+				rating,
+				author: userInfo.getUsername() || 'You',
+				time: 'Just now',
+				status: { availability, condition, accessibility }
+			};
+
+			reviewsByLocation[locationName] = [newReview, ...list].slice(0, 20);
+			helperMessage = 'Thanks for sharing. Your review is live.';
+		}
+
+		editingId = null;
 		title = '';
 		review = '';
 		rating = 0;
-		helperMessage = 'Thanks for sharing. Your review is live.';
-		sharedReviews.update(list => [newReview, ...list].slice(0, 6));
+		availability = availabilityOptions[0];
+		condition = conditionOptions[0];
+		accessibility = [];
+	}
+
+	function deleteReview(id) {
+		const list = reviewsByLocation[locationName] ?? [];
+		reviewsByLocation[locationName] = list.filter((review) => review.id !== id);
+		helperMessage = 'Your review was deleted.';
+	}
+
+	function isOwnReview(item) {
+		return item.author === currentAuthor;
+	}
+
+	function startEdit(item) {
+		editingId = item.id;
+		title = item.title;
+		review = item.body;
+		rating = item.rating;
+		availability = item.status.availability;
+		condition = item.status.condition;
+		accessibility = Array.isArray(item.status.accessibility)
+			? [...item.status.accessibility]
+			: [item.status.accessibility];
+		helperMessage = 'Editing your review...';
+	}
+
+	function cancelEdit() {
+		editingId = null;
+		helperMessage = 'Edit cancelled.';
+		title = '';
+		review = '';
+		rating = 0;
+		availability = availabilityOptions[0];
+		condition = conditionOptions[0];
+		accessibility = [];
 	}
 </script>
 
-<h1>Review Page</h1>
 <section class="page">
 	<header class="hero">
 		<div>
 			<p class="eyebrow">Share your experience</p>
 			<h1>Rate this bathroom</h1>
 			<p class="lede">Leave a fast status check, pick a rating, and add a short headline.</p>
+		</div>
+		<div class="location-row">
+			<h2 class="location-name">{locationName}</h2>
+			<button class="go" type="button" onclick={() => goto(locationLink)}>GO</button>
 		</div>
 		<div class="pill">Recent reviews</div>
 	</header>
@@ -115,7 +237,10 @@
 					<button
 						type="button"
 						class:selected={availability === option}
-						onclick={() => selectValue((value) => (availability = value), option)}
+						onclick={() => {
+							availability = option;
+							helperMessage = '';
+						}}
 					>
 						{option}
 					</button>
@@ -134,7 +259,10 @@
 					<button
 						type="button"
 						class:selected={condition === option}
-						onclick={() => selectValue((value) => (condition = value), option)}
+						onclick={() => {
+							condition = option;
+							helperMessage = '';
+						}}
 					>
 						{option}
 					</button>
@@ -152,32 +280,34 @@
 				{#each accessibilityOptions as option}
 					<button
 						type="button"
-						class:selected={accessibility === option}
-						onclick={() => selectValue((value) => (accessibility = value), option)}
+						class:selected={accessibility.includes(option)}
+						onclick={() => toggleAccess(option)}
 					>
 						{option}
 					</button>
 				{/each}
 			</div>
 		</section>
-
-		<section class="card">
-			<div class="section-head">
-				<div>
-					<p class="eyebrow">Your review</p>
-					<h2>Rate & write</h2>
-					<p class="hint">Pick a star rating and add a title plus a quick note.</p>
+		{#if userInfo.getEmail() !== 'test@mail.com'}
+			<section class="card">
+				<div class="section-head">
+					<div>
+						<p class="eyebrow">Your review</p>
+						<h2>Rate & write</h2>
+						<p class="hint">Pick a star rating and add a title plus a quick note.</p>
+					</div>
 				</div>
-			</div>
 
-			
 			<div class="stars" aria-label="Star rating from one to five">
 				{#each [1, 2, 3, 4, 5] as star}
 					<button
 						type="button"
 						class:selected={rating >= star}
 						aria-label={`Rate ${star} star${star > 1 ? 's' : ''}`}
-						onclick={() => selectValue((value) => (rating = value), star)}
+						onclick={() => {
+							rating = star;
+							helperMessage = '';
+						}}
 					>
 						{STAR_FILLED}
 					</button>
@@ -185,14 +315,13 @@
 				<span class="rating-label">{rating > 0 ? `${rating}/5` : 'Tap a star'}</span>
 			</div>
 
-
 			<label class="input-group">
 				<span>Title</span>
 				<input
 					name="title"
 					placeholder="Example: Clean and well-lit"
-					value={title}
-					oninput={(event) => (title = event.currentTarget.value)}
+					bind:value={title}
+					oninput={() => (helperMessage = '')}
 				/>
 			</label>
 
@@ -202,19 +331,35 @@
 					name="review"
 					rows="4"
 					placeholder="Keep it short: what stood out, how busy it was, any tips."
-					value={review}
-					oninput={(event) => (review = event.currentTarget.value)}
-				/>
+					bind:value={review}
+					oninput={() => (helperMessage = '')}
+				></textarea>
 			</label>
 
 			{#if helperMessage}
 				<p class="helper">{helperMessage}</p>
 			{/if}
 
-			<button class="submit" type="button" onclick={submitReview}>Submit review</button>
+			<div class="actions">
+				<button class="submit" type="button" onclick={submitReview} disabled={isGuest()}>
+					{editingId ? 'Update review' : 'Submit review'}
+				</button>
+				{#if editingId}
+					<button class="ghost" type="button" onclick={cancelEdit}>Cancel</button>
+				{/if}
+			</div>
 		</section>
+		{:else}
+		<section class="card guest-banner">
+			<p>You are continuing as a guest. Guests cannot post reviews.</p>
+			<div class="guest-actions">
+				<button type="button" class="ghost" onclick={scrollToReviews}>Continue reading</button>
+				<button type="button" class="submit" onclick={() => goto('/')}>Log in to post</button>
+			</div>
+		</section>
+		{/if}
 
-		<section class="card reviews">
+		<section id="reviews-section" class="card reviews">
 			<div class="section-head">
 				<div>
 					<p class="eyebrow">Feed</p>
@@ -222,10 +367,10 @@
 				</div>
 			</div>
 
-			{#if reviews.length === 0}
+			{#if currentReviews.length === 0}
 				<p class="hint">No reviews yet. Be the first to share your experience.</p>
 			{:else}
-				{#each reviews as item, index (item.title + index)}
+				{#each currentReviews as item (item.id)}
 					<article class="review">
 						<header>
 							<div>
@@ -237,13 +382,38 @@
 									{STAR_FILLED.repeat(item.rating)}{STAR_EMPTY.repeat(5 - item.rating)}
 								</span>
 								<span class="rating-number">{item.rating}/5</span>
+								{#if isOwnReview(item)}
+									<button
+										type="button"
+										class="ghost"
+										aria-label="Edit your review"
+										onclick={() => startEdit(item)}
+									>
+										Edit
+									</button>
+									<button
+										type="button"
+										class="delete"
+										aria-label="Delete your review"
+										onclick={() => deleteReview(item.id)}
+									>
+										Delete
+									</button>
+								{/if}
 							</div>
 						</header>
 						<p class="body">{item.body}</p>
 						<div class="tags">
 							<span>{item.status.availability}</span>
 							<span>{item.status.condition}</span>
-							<span>{item.status.accessibility}</span>
+
+							{#if Array.isArray(item.status.accessibility)}
+								{#each item.status.accessibility as tag}
+									<span>{tag}</span>
+								{/each}
+							{:else}
+								<span>{item.status.accessibility}</span>
+							{/if}
 						</div>
 					</article>
 				{/each}
@@ -251,7 +421,7 @@
 		</section>
 	</div>
 
-	{#if userInfo.getEmail() === 'test@mail.com'}
+	{#if isGuest()}
 		<div class="auth-note">
 			<h3>You need to be signed in to post a review.</h3>
 			<div class="links">
@@ -342,7 +512,8 @@
 		margin: 2px 0 0;
 		font-size: 14px;
 	}
-		.chip-row {
+
+	.chip-row {
 		display: flex;
 		flex-wrap: wrap;
 		gap: 10px;
@@ -377,7 +548,9 @@
 		font-size: 26px;
 		color: #c8c8d6;
 		cursor: pointer;
-		transition: transform 0.1s ease, color 0.2s ease;
+		transition:
+			transform 0.1s ease,
+			color 0.2s ease;
 	}
 
 	.stars button.selected {
@@ -424,6 +597,12 @@
 		font-weight: 600;
 	}
 
+	.actions {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+	}
+
 	.submit {
 		align-self: flex-start;
 		background: linear-gradient(135deg, #4f378b, #654cb5);
@@ -434,12 +613,30 @@
 		font-weight: 700;
 		cursor: pointer;
 		box-shadow: 0 10px 18px rgba(79, 55, 139, 0.3);
-		transition: transform 0.1s ease, box-shadow 0.15s ease;
+		transition:
+			transform 0.1s ease,
+			box-shadow 0.15s ease;
 	}
 
 	.submit:hover {
 		transform: translateY(-1px);
 		box-shadow: 0 12px 20px rgba(79, 55, 139, 0.36);
+	}
+
+	.ghost,
+	.delete {
+		background: transparent;
+		border: 1px solid #d6d6de;
+		color: #4f378b;
+		padding: 8px 12px;
+		border-radius: 10px;
+		font-weight: 700;
+		cursor: pointer;
+	}
+
+	.delete {
+		color: #c03221;
+		border-color: #e7c9c5;
 	}
 
 	.reviews {

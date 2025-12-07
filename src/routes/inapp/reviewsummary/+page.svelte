@@ -2,7 +2,7 @@
     import { goto } from '$app/navigation';
 	import heart from '$lib/assets/Heart.png';
     import heart2 from '$lib/assets/Heart2.png';
-    import { userInfo } from '$lib/userInfoStore.js';
+    import { userInfo, isGuest } from '$lib/userInfoStore.js';
 	import { stopPropagation } from 'svelte/legacy';
     import { sharedReviews } from '$lib';
     import { rating } from '$lib';
@@ -15,10 +15,10 @@
 
     // Check if the user is logged in first
     function toggleheart(){
-        if (userInfo.getEmail() == 'test@mail.com') {
-			like=false;
+        if (isGuest()) {
+            like=false;
             show=true;
-		}else{
+        } else {
             like=!like;
         }
     }
