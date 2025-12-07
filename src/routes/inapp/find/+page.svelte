@@ -6,7 +6,7 @@
 	const locations = [
 		{
 			name: 'Deville Coffee Washroom',
-			distance: '100 m',
+			distance: 0.1, // km
 			time: '2 min',
 			availability: 'Open now',
 			condition: 'Clean',
@@ -18,7 +18,7 @@
 		},
 		{
 			name: 'BVC Main Floor Washroom',
-			distance: '300 m',
+			distance: 0.3, // km
 			time: '6 min',
 			availability: 'Busy but open',
 			condition: 'Usable',
@@ -30,7 +30,7 @@
 		},
 		{
 			name: 'Superstore Washroom',
-			distance: '350 m',
+			distance: 1.5, // km
 			time: '8 min',
 			availability: 'Closed for cleaning',
 			condition: 'Needs attention',
@@ -39,6 +39,30 @@
 			gender: 'male',
 			coords: { x: 48, y: 68 },
 			link: '/inapp/find'
+		},
+		{
+			name: 'Library Washroom',
+			distance: 3.6, // km
+			time: '15 min',
+			availability: 'Open now',
+			condition: 'Clean',
+			accessibility: ['Wheelchair', 'Paid Accessibility'],
+			rating: 4,
+			gender: 'female',
+			coords: { x: 70, y: 50 },
+			link: '/inapp/library'
+		},
+		{
+			name: 'Mall Washroom',
+			distance: 5, // km
+			time: '30 min',
+			availability: 'Open now',
+			condition: 'Clean',
+			accessibility: ['Wheelchair', 'Changing Table', 'Paid Accessibility'],
+			rating: 5,
+			gender: 'neutral',
+			coords: { x: 20, y: 75 },
+			link: '/inapp/mall'
 		}
 	];
 
@@ -71,7 +95,7 @@
 	// ------------------------------
 	// Filter popup variables
 	let showFilter = $state(false);
-	let distance = $state(10);
+	let distance = $state(5); // km maximum distance
 	let rating = $state(0);
 	let gender = $state('');
 	let accessibilityFilters = $state([]); // array to hold selected accessibility options
@@ -82,9 +106,9 @@
 	}
 
 	function closeFilter() {
-		// Reset filters like "See All"
 		showFilter = false;
-		distance = 10;
+		// Reset filters
+		distance = 5;
 		rating = 0;
 		gender = '';
 		accessibilityFilters = [];
@@ -128,7 +152,7 @@
 			const matchesAccessibility =
 				accessibilityFilters.length === 0 ||
 				accessibilityFilters.every((f) => loc.accessibility.includes(f));
-			const matchesDistance = parseInt(loc.distance) / 1000 <= distance; // distance in km
+			const matchesDistance = loc.distance <= distance; // use km directly
 			const matchesActiveFilter =
 				activeFilter === 'All' ||
 				(activeFilter === 'Open now' && loc.availability === 'Open now') ||
@@ -188,7 +212,7 @@
 						aria-label={`Select ${loc.name}`}
 					>
 						<span class="dot"></span>
-						<span class="label">{loc.distance}</span>
+						<span class="label">{loc.distance} km</span>
 					</button>
 				{/each}
 			</div>
@@ -227,12 +251,12 @@
 				<form>
 					<button class="close-btn" type="button" onclick={closeFilter}>✕</button>
 
-					<label for="distance">Distance</label>
+					<label for="distance">Maximum Distance</label>
 					<input
 						id="distance"
 						type="range"
 						min="0"
-						max="10"
+						max="5"
 						step="0.1"
 						bind:value={distance}
 						oninput={handleDistanceChange}
@@ -289,7 +313,7 @@
 					</label>
 
 					<br />
-					<button type="button" class="Save-button" onclick={toggleFilter}>Save </button>
+					<button type="button" class="Save-button" onclick={toggleFilter}>Save</button>
 				</form>
 			</div>
 		</div>
@@ -321,7 +345,7 @@
 						<header>
 							<div>
 								<h2>{loc.name}</h2>
-								<p class="meta">{loc.distance} / {loc.time}</p>
+								<p class="meta">{loc.distance} km / {loc.time}</p>
 							</div>
 						</header>
 						<div class="tags">
@@ -341,7 +365,6 @@
 		{/if}
 	</section>
 </section>
-
 
 
 
@@ -590,7 +613,7 @@ h1 {
 	color: white;
 	border-color: #4f378b;
 	border-radius: 10px;
-	box-shadow: 0 6px 14px rgba(79, 55, 139, 0.25);
+	width: 100px;
 }
 
 .FSbutton{
