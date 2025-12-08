@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { browser } from '$app/environment';
+	import { profileStore } from '$lib/profileStore.js';
 
 	const availabilityOptions = ['Open now', 'Busy but open', 'Closed for cleaning'];
 	const conditionOptions = ['Sparkling clean', 'Usable', 'Needs attention'];
@@ -76,6 +77,12 @@
 
 	let locationName = $state('Selected location');
 	let locationLink = $state('/inapp/find');
+	let isFavorited = $state(false);
+
+	$effect(() => {
+		const favs = $profileStore?.favorites ?? [];
+		isFavorited = favs.some((f) => f.name === locationName);
+	});
 
 	$effect(() => {
 		const n = $page.url.searchParams.get('name');
@@ -207,6 +214,15 @@ function isGuest() {
 		condition = conditionOptions[0];
 		accessibility = [];
 	}
+
+	function toggleFavoriteLocation() {
+		if (isFavorited) {
+			const fav = ($profileStore?.favorites || []).find((f) => f.name === locationName);
+			if (fav) profileStore.removeFavorite(fav.id);
+		} else {
+			profileStore.addFavorite({ name: locationName, address: locationLink, rating: 0 });
+		}
+	}
 </script>
 
 <section class="page">
@@ -217,8 +233,17 @@ function isGuest() {
 			<p class="lede">Leave a fast status check, pick a rating, and add a short headline.</p>
 		</div>
 		<div class="location-row">
-			<h2 class="location-name">{locationName}</h2>
-			<button class="go" type="button" onclick={() => goto(locationLink)}>GO</button>
+				<h2 class="location-name">{locationName}</h2>
+				<button
+					class="favorite"
+					type="button"
+					aria-pressed={isFavorited}
+					onclick={toggleFavoriteLocation}
+					aria-label={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
+				>
+					{isFavorited ? '♥' : '♡'}
+				</button>
+				<button class="go" type="button" onclick={() => goto(locationLink)}>GO</button>
 		</div>
 		<div class="pill">Recent reviews</div>
 	</header>
@@ -421,15 +446,7 @@ function isGuest() {
 		</section>
 	</div>
 
-	{#if isGuest()}
-		<div class="auth-note">
-			<h3>You need to be signed in to post a review.</h3>
-			<div class="links">
-				<a href="/">Log in</a>
-				<a href="/signup">Create an account</a>
-			</div>
-		</div>
-	{/if}
+	<!-- Removed duplicate auth-note: guests see the prominent guest-banner above the form -->
 </section>
 
 <style>
@@ -708,27 +725,32 @@ function isGuest() {
 		border: 1px solid #e2e2ec;
 	}
 
-	.auth-note {
-		margin-top: 6px;
-		padding: 12px 14px;
-		border: 1px dashed #b7b7c7;
-		border-radius: 12px;
-		background: #fffdf7;
-	}
-
-	.auth-note h3 {
-		margin: 0 0 6px;
-	}
-
-	.links {
+	.location-row {
 		display: flex;
+		align-items: center;
 		gap: 12px;
 	}
 
-	.links a {
+	.favorite {
+		background: transparent;
+		border: 1px solid #d6d6de;
 		color: #4f378b;
-		font-weight: 700;
-		text-decoration: none;
+		padding: 8px 10px;
+		border-radius: 10px;
+		font-weight: 800;
+		font-size: 16px;
+		cursor: pointer;
+		transition: background 0.15s ease, color 0.15s ease, transform 0.08s ease;
+	}
+
+	.favorite:hover {
+		transform: translateY(-1px);
+	}
+
+	.favorite[aria-pressed="true"] {
+		background: #4f378b;
+		color: white;
+		border-color: #4f378b;
 	}
 
 	@media (max-width: 640px) {
