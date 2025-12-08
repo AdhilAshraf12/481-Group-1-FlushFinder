@@ -131,6 +131,11 @@ function isGuest() {
 	}
 
 	function submitReview() {
+		if (!locationName || locationName === 'Selected location') {
+			helperMessage = 'Please select a bathroom before submitting a review.';
+			return;
+		}
+
 		if (userInfo.getEmail() === 'test@mail.com') {
 			helperMessage = 'Please log in to leave a review';
 			return;
@@ -366,7 +371,13 @@ function isGuest() {
 			{/if}
 
 			<div class="actions">
-				<button class="submit" type="button" onclick={submitReview} disabled={isGuest()}>
+				<button
+					class="submit"
+					type="button"
+					onclick={submitReview}
+					disabled={isGuest() || locationName === 'Selected location'}
+					title={locationName === 'Selected location' ? 'Select a bathroom first' : ''}
+				>
 					{editingId ? 'Update review' : 'Submit review'}
 				</button>
 				{#if editingId}
