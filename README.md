@@ -7,6 +7,8 @@ This was desinged for mobile first, we have not implemented a desktop version
 To start
 
 ```bash
+git clone https://github.com/AdhilAshraf12/FlushFinder.git
+
 npm i
 
 npm start
