@@ -66,4 +66,13 @@
 	* {
 		font-family: 'Ubuntu', sans-serif;
 	}
+
+	:global(html) {
+		/* Reserve vertical scrollbar space to prevent layout shift when overlays appear */
+		overflow-y: scroll;
+	}
+
+	nav > div {
+		max-width: 480px; /* keep nav inner width consistent */
+	}
 </style>

@@ -157,7 +157,43 @@ const defaultData = {
 };
 
 function createProfileStore() {
-    const { subscribe, set, update } = writable(defaultData);
+    const STORAGE_KEY = 'profileStore';
+
+    // initialize from localStorage when available
+    let initial = defaultData;
+    if (typeof window !== 'undefined') {
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                // merge with defaults to avoid missing keys
+                initial = { ...defaultData, ...parsed };
+            }
+        } catch (e) {
+            // ignore parse errors
+        }
+    }
+
+    const store = writable(initial);
+
+    // persist updates to localStorage
+    if (typeof window !== 'undefined') {
+        store.subscribe((value) => {
+            try {
+                // persist only the minimal parts we care about
+                const toPersist = {
+                    username: value.username,
+                    favorites: value.favorites,
+                    recentReviews: value.recentReviews
+                };
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(toPersist));
+            } catch (e) {
+                // ignore quota errors
+            }
+        });
+    }
+
+    const { subscribe, set, update } = store;
 
     return {
         subscribe,

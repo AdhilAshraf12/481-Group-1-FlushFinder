@@ -75,9 +75,10 @@
 	let currentAuthor = $derived(userInfo?.getUsername ? userInfo.getUsername() : 'You');
 	let editingId = $state(null);
 
-	let locationName = $state('Selected location');
+	let locationName = $state(null);
 	let locationLink = $state('/inapp/find');
 	let isFavorited = $state(false);
+	let locationSelected = $state(false);
 
 	$effect(() => {
 		const favs = $profileStore?.favorites ?? [];
@@ -87,8 +88,9 @@
 	$effect(() => {
 		const n = $page.url.searchParams.get('name');
 		const l = $page.url.searchParams.get('link');
-		locationName = n ?? 'Selected location';
+		locationName = n ?? null;
 		locationLink = l ?? '/inapp/find';
+		locationSelected = !!n;
 	});
 
 	
@@ -131,7 +133,7 @@ function isGuest() {
 	}
 
 	function submitReview() {
-		if (!locationName || locationName === 'Selected location') {
+		if (!locationSelected) {
 			helperMessage = 'Please select a bathroom before submitting a review.';
 			return;
 		}
@@ -238,7 +240,11 @@ function isGuest() {
 			<p class="lede">Leave a fast status check, pick a rating, and add a short headline.</p>
 		</div>
 		<div class="location-row">
-				<h2 class="location-name">{locationName}</h2>
+			<!-- left side intentionally empty to keep header layout -->
+			<div class="action-buttons">
+				{#if locationSelected}
+					<span class="location-label" title={locationName}>{locationName}</span>
+				{/if}
 				<button
 					class="favorite"
 					type="button"
@@ -246,11 +252,11 @@ function isGuest() {
 					onclick={toggleFavoriteLocation}
 					aria-label={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
 				>
-					{isFavorited ? '♥' : '♡'}
+					<span class="heart">{isFavorited ? '♥' : '♡'}</span>
 				</button>
 				<button class="go" type="button" onclick={() => goto(locationLink)}>GO</button>
+			</div>
 		</div>
-		<div class="pill">Recent reviews</div>
 	</header>
 
 	<div class="grid">
@@ -375,8 +381,8 @@ function isGuest() {
 					class="submit"
 					type="button"
 					onclick={submitReview}
-					disabled={isGuest() || locationName === 'Selected location'}
-					title={locationName === 'Selected location' ? 'Select a bathroom first' : ''}
+					disabled={isGuest() || !locationSelected}
+					title={!locationSelected ? 'Select a bathroom first' : ''}
 				>
 					{editingId ? 'Update review' : 'Submit review'}
 				</button>
@@ -438,6 +444,17 @@ function isGuest() {
 								{/if}
 							</div>
 						</header>
+
+							{#if !locationSelected}
+								<div class="selection-overlay" role="dialog" aria-label="Select a washroom">
+									<div class="overlay-card">
+										<p>Please select a washroom to read or leave reviews.</p>
+										<div class="overlay-actions">
+											<button class="submit" type="button" onclick={() => goto('/inapp/find')}>Select a washroom</button>
+										</div>
+									</div>
+								</div>
+							{/if}
 						<p class="body">{item.body}</p>
 						<div class="tags">
 							<span>{item.status.availability}</span>
@@ -468,6 +485,7 @@ function isGuest() {
 	}
 
 	.page {
+		position: relative;
 		max-width: 1100px;
 		margin: 0 auto;
 		padding: 24px 18px 56px;
@@ -506,13 +524,7 @@ function isGuest() {
 		color: rgba(255, 255, 255, 0.85);
 	}
 
-	.pill {
-		border: 1px solid rgba(255, 255, 255, 0.5);
-		padding: 8px 14px;
-		border-radius: 999px;
-		font-weight: 600;
-		font-size: 13px;
-	}
+	/* .pill removed; styles cleaned up. */
 
 	.grid {
 		display: grid;
@@ -740,28 +752,78 @@ function isGuest() {
 		display: flex;
 		align-items: center;
 		gap: 12px;
+		width: 100%;
+	}
+
+	.action-buttons {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		margin-left: auto;
+	}
+
+	.location-label {
+		font-size: 18px;
+		font-weight: 700;
+		color: white;
+		background: rgba(255,255,255,0.06);
+		padding: 6px 10px;
+		border-radius: 10px;
+		max-width: 260px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	.favorite {
 		background: transparent;
 		border: 1px solid #d6d6de;
 		color: #4f378b;
-		padding: 8px 10px;
-		border-radius: 10px;
+		padding: 12px 14px;
+		border-radius: 14px;
 		font-weight: 800;
-		font-size: 16px;
+		font-size: 20px;
 		cursor: pointer;
-		transition: background 0.15s ease, color 0.15s ease, transform 0.08s ease;
+		transition: background 0.12s ease, color 0.12s ease, transform 0.08s ease;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 56px;
+		height: 56px;
 	}
 
 	.favorite:hover {
-		transform: translateY(-1px);
+		transform: translateY(-2px) scale(1.02);
 	}
 
 	.favorite[aria-pressed="true"] {
-		background: #4f378b;
+		background: #c62828;
 		color: white;
-		border-color: #4f378b;
+		border-color: #c62828;
+		box-shadow: 0 8px 20px rgba(198, 40, 40, 0.18);
+	}
+
+	.go {
+		background: linear-gradient(135deg, #1e9b4a, #2ecc71);
+		color: white;
+		border: none;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		height: 56px;
+		min-width: 56px;
+		padding: 0 18px;
+		border-radius: 14px;
+		font-weight: 800;
+		font-size: 16px;
+		cursor: pointer;
+		box-shadow: 0 10px 20px rgba(46, 204, 113, 0.18);
+		transition: transform 0.08s ease, box-shadow 0.12s ease;
+	}
+
+	.go:hover {
+		transform: translateY(-1px);
+		box-shadow: 0 14px 28px rgba(46, 204, 113, 0.22);
 	}
 
 	@media (max-width: 640px) {
@@ -775,5 +837,37 @@ function isGuest() {
 			flex-direction: column;
 			align-items: flex-start;
 		}
+	}
+
+	.selection-overlay {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: rgba(255, 255, 255, 0.82);
+		backdrop-filter: blur(4px) saturate(90%);
+		z-index: 40;
+	}
+
+	.overlay-card {
+		background: white;
+		padding: 22px;
+		border-radius: 12px;
+		box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+		text-align: center;
+		max-width: 420px;
+	}
+
+	.overlay-card p {
+		margin: 0 0 12px 0;
+		font-weight: 700;
+		color: #222;
+	}
+
+	.overlay-actions {
+		display: flex;
+		justify-content: center;
+		gap: 10px;
 	}
 </style>
