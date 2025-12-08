@@ -7,6 +7,8 @@ This was desinged for mobile first, we have not implemented a desktop version
 To start
 
 ```bash
+npm i
+
 npm start
 ```
 
