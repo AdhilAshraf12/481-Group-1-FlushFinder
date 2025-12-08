@@ -22,7 +22,7 @@
 			time: '6 min',
 			availability: 'Busy but open',
 			condition: 'Usable',
-			accessibility: ['Family friendly', 'Paid Accessibility'],
+			accessibility: ['Family Friendly', 'Paid Accessibility'],
 			rating: 3,
 			gender: 'female',
 			coords: { x: 58, y: 38 },
@@ -304,13 +304,16 @@
 					</label>
 
 					<br />
-					<label>
+					<label >
 						Accessibility
+
 						<br />
-						<label><input type="checkbox" checked={accessibilityFilters.includes('Wheelchair')} onchange={() => toggleAccessibility('Wheelchair')} /> Wheelchair</label>
-						<label><input type="checkbox" checked={accessibilityFilters.includes('Changing Table')} onchange={() => toggleAccessibility('Changing Table')} /> Changing Table</label>
-						<label><input type="checkbox" checked={accessibilityFilters.includes('Paid Accessibility')} onchange={() => toggleAccessibility('Paid Accessibility')} /> Paid Accessibility</label>
-					</label>
+						<label ><input type="checkbox" checked={accessibilityFilters.includes('Wheelchair')} onchange={() => toggleAccessibility('Wheelchair')} /> Wheelchair ♿</label>
+						<label ><input type="checkbox" checked={accessibilityFilters.includes('Changing Table')} onchange={() => toggleAccessibility('Changing Table')} /> Changing Table 🚼</label>
+						<label ><input type="checkbox" checked={accessibilityFilters.includes('Paid Accessibility')} onchange={() => toggleAccessibility('Paid Accessibility')} /> Paid Accessibility 💲</label>
+						<label ><input type="checkbox" checked={accessibilityFilters.includes('Family Friendly')} onchange={() => toggleAccessibility('Family Friendly')} /> Family Friendly 👨‍👩‍👧‍👦</label>
+							</label>
+
 
 					<br />
 					<button type="button" class="Save-button" onclick={toggleFilter}>Save</button>
@@ -342,12 +345,23 @@
 							}
 						}}
 					>
-						<header>
-							<div>
-								<h2>{loc.name}</h2>
-								<p class="meta">{loc.distance} km / {loc.time}</p>
-							</div>
-						</header>
+<header>
+  <div style="display: flex; align-items: center; gap: 8px;">
+    <h2>{loc.name}</h2>
+    <div style="display: flex; gap: 2px;">
+      {#each [1,2,3,4,5] as star}
+        <span
+          style="
+            font-size: 18px;
+            color: {star <= loc.rating ? 'gold' : 'transparent'};
+            -webkit-text-stroke: 1px gold;
+          "
+        >★</span>
+      {/each}
+    </div>
+  </div>
+  <p class="meta">{loc.distance} km / {loc.time}</p>
+</header>
 						<div class="tags">
 							<span class="pill">{loc.availability}</span>
 							<span class="pill neutral">{loc.condition}</span>
@@ -357,7 +371,7 @@
 						</div>
 					</div>
 					<div class="card-actions">
-						<a class="reviews-link" href={`/inapp/review?name=${encodeURIComponent(loc.name)}&link=${encodeURIComponent(loc.link)}`} onclick={(e) => e.stopPropagation()}>Reviews</a>
+						<a class="reviews-link" href={`/inapp/review?name=${encodeURIComponent(loc.name)}&link=${encodeURIComponent(loc.link)}`} onclick={(e) => e.stopPropagation()}>ViewReviews</a>
 						<a class="go" href={loc.link} onclick={(e) => e.stopPropagation()}>Go</a>
 					</div>
 				</article>
@@ -753,8 +767,7 @@ h1 {
 	background-color: white;
 	padding: 20px;
 	border-radius: 12px;
-	width: 300px;
-	box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+	width: max-content;
 }
 
 label {
@@ -834,6 +847,22 @@ label {
 	margin-left: 40%;
 }
 
+/* Move the Accessibility label 5px above the checkboxes */
+label:has(input[type="checkbox"]) {
+  margin-top: 5px;
+ 
+}
+
+/* Style checkboxes under Accessibility to be purple */
+label input[type="checkbox"] {
+  accent-color: #6750A4; /* Purple */
+  cursor: pointer;
+}
+
+
+
+
+
 @media (max-width: 640px) {
 	.card header {
 		flex-direction: column;
@@ -844,4 +873,6 @@ label {
 		width: 100%;
 	}
 }
+
+
 </style>
