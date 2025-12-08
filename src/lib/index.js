@@ -3,6 +3,7 @@ import { derived, writable } from 'svelte/store';
 
 const seedReviews = [
 		{
+			id: 1,
 			title: 'Clean and bright',
 			body: 'Easy to find and spotless. Soap and paper towels were stocked.',
 			rating: 5,
@@ -14,7 +15,7 @@ const seedReviews = [
 				accessibility: 'Wheelchair accessible'
 			}
 		},
-		{
+		{	id: 2,
 			title: 'Lineup at lunch',
 			body: 'Only two stalls so it backs up around noon, but still usable.',
 			rating: 3,
@@ -26,7 +27,7 @@ const seedReviews = [
 				accessibility: 'Gender neutral'
 			}
 		},
-		{
+		{	id: 3,
 			title: 'Closed earlier',
 			body: 'Cleaning sign was up around 8pm. Come back later.',
 			rating: 2,

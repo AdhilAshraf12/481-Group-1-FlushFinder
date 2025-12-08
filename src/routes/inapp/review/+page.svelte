@@ -1,6 +1,7 @@
 <script>
 	import { userInfo } from '$lib/userInfoStore';
 	import { goto } from '$app/navigation';
+	import { sharedReviews } from '$lib';
 
 	const availabilityOptions = ['Open now', 'Busy but open', 'Closed for cleaning'];
 	const conditionOptions = ['Sparkling clean', 'Usable', 'Needs attention'];
@@ -90,7 +91,7 @@
 		}
 
 		if (editingId) {
-			reviews = reviews.map((item) =>
+			sharedReviews.update(list => list.map((item) =>
 				item.id === editingId
 					? {
 							...item,
@@ -100,7 +101,7 @@
 							status: { availability, condition, accessibility }
 						}
 					: item
-			);
+			));
 			helperMessage = 'Your review was updated.';
 		} else {
 			const newReview = {
@@ -113,7 +114,7 @@
 				status: { availability, condition, accessibility }
 			};
 
-			reviews = [newReview, ...reviews].slice(0, 6);
+			sharedReviews.update(list => [newReview, ...list].slice(0, 6));
 			helperMessage = 'Thanks for sharing. Your review is live.';
 		}
 
@@ -127,7 +128,7 @@
 	}
 
 	function deleteReview(id) {
-		reviews = reviews.filter((review) => review.id !== id);
+		sharedReviews.update(list => list.filter((review) => review.id !== id));
 		helperMessage = 'Your review was deleted.';
 	}
 
@@ -305,10 +306,10 @@
 				</div>
 			</div>
 
-			{#if reviews.length === 0}
+			{#if $sharedReviews.length === 0}
 				<p class="hint">No reviews yet. Be the first to share your experience.</p>
 			{:else}
-				{#each reviews as item (item.id)}
+				{#each $sharedReviews as item (item.id)}
 					<article class="review">
 						<header>
 							<div>

@@ -2,6 +2,9 @@
 	import { userInfo } from '$lib/userInfoStore';
 	import { goto } from '$app/navigation';
 	import mapImage from '$lib/assets/mapsimage.png';
+	import { sharedReviews,rating } from '$lib';
+	const STAR_FILLED = '\u2605';
+	const STAR_EMPTY = '\u2606';
 
 	const locations = [
 		{
@@ -173,6 +176,7 @@
 					<header>
 						<div>
 							<h2>{loc.name}</h2>
+							<div><span class="stars-inline">{STAR_FILLED.repeat(Math.round($rating))}</span></div>
 							<p class="meta">{loc.distance} / {loc.time}</p>
 						</div>
 						<button class="go" type="button" on:click={() => goto(loc.link)}>Go</button>
@@ -191,6 +195,11 @@
 </section>
 
 <style>
+	.stars-inline {
+		color: #f7b500;
+		font-size: 20px;
+		letter-spacing: 1px;
+	}
 	:global(body) {
 		font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
 		background: #f6f7fb;
