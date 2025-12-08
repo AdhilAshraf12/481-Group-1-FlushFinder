@@ -594,6 +594,7 @@
 		display: flex;
 		justify-content: space-between;
 		gap: 8px;
+		flex-wrap: wrap;
 	}
 
 	.review h3 {
