@@ -117,6 +117,7 @@
 
 // src/lib/profileStore.js
 import { writable } from "svelte/store";
+import { sharedReviews } from "$lib";
 
 const defaultData = {
     username: "Jenna",
@@ -158,6 +159,25 @@ const defaultData = {
 
 function createProfileStore() {
     const { subscribe, set, update } = writable(defaultData);
+
+    sharedReviews.subscribe($sharedReviews => {
+        update(store => {
+            const dynamicReviews = $sharedReviews
+                .slice(0,-3) 
+                .map(r => ({
+                    id: r.id,
+                    location: 'Deville Coffee Washroom',
+                    stars: r.rating,
+                    comment: r.body,
+                    time: r.time
+                }));
+
+            return {
+                ...store,
+                recentReviews: [...store.recentReviews, ...dynamicReviews]
+            };
+        });
+    });
 
     return {
         subscribe,
