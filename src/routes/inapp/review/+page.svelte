@@ -72,6 +72,7 @@
 	let condition = $state(conditionOptions[0]);
 	let accessibility = $state([]);
 	let helperMessage = $state('');
+	let helperType = $state('');
 	let currentAuthor = $derived(userInfo?.getUsername ? userInfo.getUsername() : 'You');
 	let editingId = $state(null);
 
@@ -130,21 +131,25 @@ function isGuest() {
 			accessibility = [...accessibility, option];
 		}
 		helperMessage = '';
+		helperType = '';
 	}
 
 	function submitReview() {
 		if (!locationSelected) {
 			helperMessage = 'Please select a bathroom before submitting a review.';
+			helperType = 'error';
 			return;
 		}
 
 		if (userInfo.getEmail() === 'test@mail.com') {
 			helperMessage = 'Please log in to leave a review';
+			helperType = 'error';
 			return;
 		}
 
 		if (!title.trim() || !review.trim() || rating === 0) {
 			helperMessage = 'Add a title, rating, and a short note before submitting.';
+			helperType = 'error';
 			return;
 		}
 
@@ -163,7 +168,8 @@ function isGuest() {
 						}
 					: item
 			);
-			helperMessage = 'Your review was updated.';
+				helperMessage = 'Your review was updated.';
+				helperType = 'success';
 		} else {
 			const newReview = {
 				id: Date.now(), // Simple unique ID
@@ -176,7 +182,8 @@ function isGuest() {
 			};
 
 			reviewsByLocation[locationName] = [newReview, ...list].slice(0, 20);
-			helperMessage = 'Thanks for sharing. Your review is live.';
+				helperMessage = 'Thanks for sharing. Your review is live.';
+				helperType = 'success';
 		}
 
 		editingId = null;
@@ -192,6 +199,7 @@ function isGuest() {
 		const list = reviewsByLocation[locationName] ?? [];
 		reviewsByLocation[locationName] = list.filter((review) => review.id !== id);
 		helperMessage = 'Your review was deleted.';
+		helperType = 'success';
 	}
 
 	function isOwnReview(item) {
@@ -209,11 +217,13 @@ function isGuest() {
 			? [...item.status.accessibility]
 			: [item.status.accessibility];
 		helperMessage = 'Editing your review...';
+		helperType = 'info';
 	}
 
 	function cancelEdit() {
 		editingId = null;
 		helperMessage = 'Edit cancelled.';
+		helperType = 'info';
 		title = '';
 		review = '';
 		rating = 0;
@@ -258,6 +268,8 @@ function isGuest() {
 			</div>
 		</div>
 	</header>
+
+			
 
 	<div class="grid">
 		<section class="card">
@@ -343,6 +355,7 @@ function isGuest() {
 						onclick={() => {
 							rating = star;
 							helperMessage = '';
+							helperType = '';
 						}}
 					>
 						{STAR_FILLED}
@@ -357,7 +370,7 @@ function isGuest() {
 					name="title"
 					placeholder="Example: Clean and well-lit"
 					bind:value={title}
-					oninput={() => (helperMessage = '')}
+					oninput={() => { helperMessage = ''; helperType = ''; }}
 				/>
 			</label>
 
@@ -368,20 +381,21 @@ function isGuest() {
 					rows="4"
 					placeholder="Keep it short: what stood out, how busy it was, any tips."
 					bind:value={review}
-					oninput={() => (helperMessage = '')}
+					oninput={() => { helperMessage = ''; helperType = ''; }}
 				></textarea>
 			</label>
 
 			{#if helperMessage}
-				<p class="helper">{helperMessage}</p>
+				<p class="helper {helperType}">{helperMessage}</p>
 			{/if}
 
 			<div class="actions">
 				<button
+					class:disabled={isGuest() || !locationSelected}
 					class="submit"
 					type="button"
 					onclick={submitReview}
-					disabled={isGuest() || !locationSelected}
+					aria-disabled={isGuest() || !locationSelected}
 					title={!locationSelected ? 'Select a bathroom first' : ''}
 				>
 					{editingId ? 'Update review' : 'Submit review'}
@@ -637,6 +651,18 @@ function isGuest() {
 		font-weight: 600;
 	}
 
+	.helper.success {
+		color: #166534; /* green */
+		background: rgba(16, 185, 129, 0.06);
+		padding: 6px 8px;
+		border-radius: 8px;
+	}
+
+	.helper.info {
+		color: #0f172a;
+		opacity: 0.9;
+	}
+
 	.actions {
 		display: flex;
 		align-items: center;
@@ -656,6 +682,13 @@ function isGuest() {
 		transition:
 			transform 0.1s ease,
 			box-shadow 0.15s ease;
+	}
+
+	.submit.disabled,
+	.submit[aria-disabled="true"] {
+		opacity: 0.5;
+		cursor: not-allowed;
+		box-shadow: none;
 	}
 
 	.submit:hover {
@@ -696,6 +729,30 @@ function isGuest() {
 		display: flex;
 		justify-content: space-between;
 		gap: 8px;
+		align-items: center;
+	}
+
+	/* allow the title/meta area to shrink and truncate so action buttons stay inside */
+	.review header > div:first-child {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+
+	.review h3 {
+		margin: 0;
+		font-size: 17px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.meta {
+		margin: 3px 0 0;
+		color: #5f5f6b;
+		font-size: 13px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	.review h3 {
@@ -713,6 +770,7 @@ function isGuest() {
 		display: flex;
 		align-items: center;
 		gap: 8px;
+		flex-shrink: 0; /* keep the score/buttons from shrinking */
 	}
 
 	.stars-inline {

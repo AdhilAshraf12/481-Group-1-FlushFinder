@@ -113,14 +113,12 @@
 				<button type="button" class="ghost" onclick={resetView}>Reset view</button>
 			</div>
 		</header>
-		<div
-			class="map-shell"
-			style={`background-image: linear-gradient(135deg, rgba(247, 247, 251, 0.85) 25%, rgba(234, 234, 245, 0.85) 25%, rgba(234, 234, 245, 0.85) 50%, rgba(247, 247, 251, 0.85) 50%, rgba(247, 247, 251, 0.85) 75%, rgba(234, 234, 245, 0.85) 75%, rgba(234, 234, 245, 0.85) 100%), url(${mapImage});`}
-		>
+		<div class="map-shell">
 			<div
 				class="map-content"
 				style={`transform: translate(${panX}px, ${panY}px) scale(${zoom});`}
 			>
+				<div class="map-bg" style={`background-image: url(${mapImage});`}></div>
 				<div class="map-grid"></div>
 				{#each locations as loc}
 					<button
@@ -343,6 +341,29 @@
 		overflow: hidden;
 		border: 1px solid #ececf4;
 		background-size: 32px 32px, cover;
+	}
+
+	.map-bg {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background-size: cover;
+		background-position: center center;
+		background-repeat: no-repeat;
+		/* subtle overlay to match earlier linear-gradient look */
+	}
+
+	.map-bg::after {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: linear-gradient(135deg, rgba(247, 247, 251, 0.85) 25%, rgba(234, 234, 245, 0.85) 25%, rgba(234, 234, 245, 0.85) 50%, rgba(247, 247, 251, 0.85) 50%, rgba(247, 247, 251, 0.85) 75%, rgba(234, 234, 245, 0.85) 75%, rgba(234, 234, 245, 0.85) 100%);
+		pointer-events: none;
 	}
 
 	.map-content {
